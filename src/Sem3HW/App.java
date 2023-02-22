@@ -48,11 +48,13 @@ public class App {
 //                    System.out.println("Ошибка! Введено пустое значение. Повторите ввод");
 //                    k = myScan.nextLine();
 //                }
-        List<String> inputData = new ArrayList<>();
+        ArrayList<String> inputData = new ArrayList<>();
         inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441 f"); // правильный ввод
         inputData.add("24.05.1986 Кузнецов Олег Николаевич f 89211391441 "); // правильный ввод
-        inputData.add("Кузнецов Николаевич 24.05.1986 Олег 89211391441 f"); // неправильный порядок фио
-        inputData.add("К123нецов О николаевич 24.05.1986 89211391441 f"); // фио некорректное
+//        inputData.add("Кузнецов Николаевич 24.05.1986 Олег 89211391441 f"); // неправильный порядок фио
+//        inputData.add("К123нецов О николаевич 24.05.1986 89211391441 f"); // фио некорректное
+        inputData.add("Кузнецов Олег Николаевич 24.0dd5.1986 89211391441 f"); // ошибка в дате
+//        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441 f, 224485, Голенищев"); // лишние данные
         inputData.add("24.05.1986 89211391441 f"); // нет одного из полей
         inputData.add("Кузнецов Олег Николаевич 89211391441 f"); // нет одного из полей
         inputData.add("Кузнецов Олег Николаевич 24.05.1986 f"); // нет одного из полей
@@ -62,15 +64,26 @@ public class App {
             String[] dataArray;
             dataArray = inputData.get(i).split(" ");
             System.out.println(Arrays.toString(dataArray));
+//            Проверка по количеству введённых данных
+            if (dataArray.length != 6){
+                throw new RuntimeException("Ошибка по количеству введённых данных");
+            }
 
-            LookForName(dataArray);
+            String [] tempName = LookForName(dataArray);
             LookForDate(dataArray);
-            LookForTel(dataArray);
-            LookForGender(dataArray);
+//            LookForTel(dataArray);
+//            LookForGender(dataArray);
+
+            ArrayList<String> resultData = new ArrayList<>();
+            for (int j = 0; j <= 2; j++) {
+                resultData.add(j,tempName[j]);
+            }
 
         }
-
-
+//        ArrayList<String> resultData = new ArrayList<>(Arrays.asList("Кузнецов Олег Николаевич", "24.05.1986", "89211391441", "f"));
+//        String someName = "Кузнецов";
+//
+//        DataWriter.WriteDataToFile(someName, resultData);
 
 
     }
@@ -95,21 +108,16 @@ public class App {
     public static Date LookForDate(String[] dataArray) {
 
         for (int i = 0; i < dataArray.length; i++) {
-            boolean success = false;
             DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
             Date temp;
             try {
                 temp = df.parse(dataArray[i]);
-                success = true;
                 System.out.println(temp);
                 return temp;
             } catch (NumberFormatException | ParseException e) {
-                success = false;
             }
-
         }
-        Date date = new Date(0000);
-        return date;
+        throw new RuntimeException("Ошибка распознавания даты");
     }
 
     public static String LookForGender(String[] dataArray) {
@@ -131,22 +139,33 @@ public class App {
     }
 
 
-    public static String LookForName(String[] dataArray) {
+    public static String[] LookForName(String[] dataArray) {
 
-        // первая буква большая, нет цифр, букв больше 1
+        /*
+        1) Находим первую строку, которая проходит проверку. Считаем, что это фамилия
+        2) Следующий элемент должен пройти проверку и это будет имя
+        3) Следующий элемент должен пройти проверку и это будет отчество
+        */
 
-        for (int i = 0; i < dataArray.length; i++) {
-            boolean success = false;
-            String temp = dataArray[i];
+        String[] FIO = new String[3];
+        int nameCounter = 0;
+        for (String s : dataArray) {
+            String temp = s;
 
+            //  Проверка на условия: первая буква большая, нет цифр, букв больше 1
             if (Character.isUpperCase(temp.charAt(0)) &&
                     temp.matches("[а-яА-Я]+") &&
                     temp.toCharArray().length > 1) {
-                System.out.println(dataArray[i]);
-                success = true;
+                System.out.println(s);
+                FIO[nameCounter] = s;
+                if (nameCounter == 2) {
+                    return FIO;
+                }
+                nameCounter++;
+            } else if (nameCounter != 0) {
+                throw new RuntimeException("Ошибка ввода ФИО");
             }
-
         }
-        return "-1";
+        throw new RuntimeException("Ошибка ввода ФИО");
     }
 }
