@@ -15,7 +15,8 @@ public class DataWriter {
                 }
             myWriter.append("\n");
         } catch (IOException e) {
-            System.out.println("Ошибка");
+            System.out.println("Ошибка записи данных в файл");
+            e.printStackTrace();
         }
 
     }

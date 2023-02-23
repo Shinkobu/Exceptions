@@ -37,84 +37,96 @@ import java.util.*;
 public class App {
 
     public static void main(String[] args) {
-        System.out.println("Введите данные через пробел в произвольном порядке:\n" +
-                "Фамилия, Имя, Отчество\n" +
-                "дата рождения в формате dd.mm.yyyy\n" +
-                "номер телефона - только цифры без пробелов\n" +
-                "пол - символ латиницей f или m\n");
-//        Scanner myScan = new Scanner(System.in);
-//        String k = myScan.nextLine();
-//                while (k.equals("")){
-//                    System.out.println("Ошибка! Введено пустое значение. Повторите ввод");
-//                    k = myScan.nextLine();
-//                }
+        System.out.println("""
+                Введите данные через пробел в произвольном порядке:
+                Фамилия, Имя, Отчество
+                дата рождения в формате dd.mm.yyyy
+                номер телефона - только цифры без пробелов
+                пол - символ латиницей f или m
+                """);
+
+        Scanner myScan = new Scanner(System.in);
+        String k = myScan.nextLine();
+                while (k.equals("")){
+                    System.out.println("Ошибка! Введено пустое значение. Повторите ввод");
+                    k = myScan.nextLine();
+                }
+                myScan.close();
+
         ArrayList<String> inputData = new ArrayList<>();
-        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441 f"); // правильный ввод
-        inputData.add("24.05.1986 Кузнецов Олег Николаевич f 89211391441 "); // правильный ввод
+        inputData.add(k);
+
+//        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441 f"); // правильный ввод
+//        inputData.add("Кузнецов Александр Николаевич 13.05.1978 224488 f"); // правильный ввод
+//        inputData.add("24.05.1986 Васнецов Федор Петрович m 89211391441 "); // правильный ввод
+//        inputData.add("Васнецов Александр Николаевич 8.12.1948 224488 f"); // правильный ввод
+//        inputData.add("24.05.1986 Пушкин Михаил Петрович m 89211391441 "); // правильный ввод
 //        inputData.add("Кузнецов Николаевич 24.05.1986 Олег 89211391441 f"); // неправильный порядок фио
 //        inputData.add("К123нецов О николаевич 24.05.1986 89211391441 f"); // фио некорректное
-        inputData.add("Кузнецов Олег Николаевич 24.0dd5.1986 89211391441 f"); // ошибка в дате
+//        inputData.add("Кузнецов Олег Николаевич 24.0dd5.1986 89211391441 f"); // ошибка в дате
+//        inputData.add("24.05.1986 Васнецов Федор Петрович f email@yandex.ru "); // ошибка по телефону
+//        inputData.add("24.05.1986 Васнецов Федор Петрович м 89211391441 "); // ошибка по полу
 //        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441 f, 224485, Голенищев"); // лишние данные
-        inputData.add("24.05.1986 89211391441 f"); // нет одного из полей
-        inputData.add("Кузнецов Олег Николаевич 89211391441 f"); // нет одного из полей
-        inputData.add("Кузнецов Олег Николаевич 24.05.1986 f"); // нет одного из полей
-        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441"); // нет одного из полей
+//        inputData.add("24.05.1986 89211391441 f"); // нет одного из полей
+//        inputData.add("Кузнецов Олег Николаевич 89211391441 f"); // нет одного из полей
+//        inputData.add("Кузнецов Олег Николаевич 24.05.1986 f"); // нет одного из полей
+//        inputData.add("Кузнецов Олег Николаевич 24.05.1986 89211391441"); // нет одного из полей
 
         for (int i = 0; i < inputData.size(); i++) {
             String[] dataArray;
             dataArray = inputData.get(i).split(" ");
-            System.out.println(Arrays.toString(dataArray));
+//            System.out.println(Arrays.toString(dataArray));
 //            Проверка по количеству введённых данных
-            if (dataArray.length != 6){
-                throw new RuntimeException("Ошибка по количеству введённых данных");
+            if (dataArray.length != 6) {
+                throw new ElementsQuantityException(dataArray.length, dataArray);
             }
 
-            String [] tempName = LookForName(dataArray);
-            LookForDate(dataArray);
-//            LookForTel(dataArray);
-//            LookForGender(dataArray);
+            String[] tempName = LookForName(dataArray);
+            String tempDate = LookForDate(dataArray);
+            String tempTel = LookForTel(dataArray);
+            String tempGender = LookForGender(dataArray);
 
             ArrayList<String> resultData = new ArrayList<>();
             for (int j = 0; j <= 2; j++) {
-                resultData.add(j,tempName[j]);
+                resultData.add(j, tempName[j]);
             }
+            resultData.add(3, tempDate);
+            resultData.add(4, tempTel);
+            resultData.add(5, tempGender);
+
+            DataWriter.WriteDataToFile(tempName[0], resultData);
+            System.out.println("Данные успешно распознаны и записаны в файл");
 
         }
-//        ArrayList<String> resultData = new ArrayList<>(Arrays.asList("Кузнецов Олег Николаевич", "24.05.1986", "89211391441", "f"));
-//        String someName = "Кузнецов";
-//
-//        DataWriter.WriteDataToFile(someName, resultData);
-
-
     }
 
-    public static long LookForTel(String[] dataArray) {
+    public static String LookForTel(String[] dataArray) {
 
         for (int i = 0; i < dataArray.length; i++) {
-            boolean success = false;
             try {
-                Long temp = Long.parseLong(dataArray[i]);
-                success = true;
-                System.out.println(temp);
-                return temp;
-            } catch (NumberFormatException e) {
-                success = false;
+                long temp = Long.parseLong(dataArray[i]);
+                String tempString = Long.toString(temp);
+//                System.out.println(tempString);
+                return tempString;
+            } catch (NumberFormatException ignored) {
             }
-
         }
-        return -1;
+        throw new RuntimeException("Ошибка распознавания номера телефона");
     }
 
-    public static Date LookForDate(String[] dataArray) {
+    public static String LookForDate(String[] dataArray) {
+        Date tempDate;
+        String tempString;
 
         for (int i = 0; i < dataArray.length; i++) {
             DateFormat df = new SimpleDateFormat("dd.MM.yyyy");
-            Date temp;
+
             try {
-                temp = df.parse(dataArray[i]);
-                System.out.println(temp);
-                return temp;
-            } catch (NumberFormatException | ParseException e) {
+                tempDate = df.parse(dataArray[i]);
+                tempString = df.format(tempDate);
+//                System.out.println(tempString);
+                return tempString;
+            } catch (NumberFormatException | ParseException ignored) {
             }
         }
         throw new RuntimeException("Ошибка распознавания даты");
@@ -123,19 +135,15 @@ public class App {
     public static String LookForGender(String[] dataArray) {
 
         for (int i = 0; i < dataArray.length; i++) {
-            boolean success = false;
-            String temp;
             if (dataArray[i].equals("f")) {
-                success = true;
-                System.out.println("f");
+//                System.out.println("f");
                 return "f";
             } else if (dataArray[i].equals("m")) {
-                success = true;
-                System.out.println("m");
+//                System.out.println("m");
                 return "m";
             }
         }
-        return "-1";
+        throw new RuntimeException("Ошибка распознавания пола");
     }
 
 
@@ -150,13 +158,12 @@ public class App {
         String[] FIO = new String[3];
         int nameCounter = 0;
         for (String s : dataArray) {
-            String temp = s;
 
             //  Проверка на условия: первая буква большая, нет цифр, букв больше 1
-            if (Character.isUpperCase(temp.charAt(0)) &&
-                    temp.matches("[а-яА-Я]+") &&
-                    temp.toCharArray().length > 1) {
-                System.out.println(s);
+            if (Character.isUpperCase(s.charAt(0)) &&
+                    s.matches("[а-яА-Я]+") &&
+                    s.toCharArray().length > 1) {
+//                System.out.println(s);
                 FIO[nameCounter] = s;
                 if (nameCounter == 2) {
                     return FIO;
